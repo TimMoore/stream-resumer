@@ -1,3 +1,3 @@
-# lagom-java.g8
+An example of resuming a request to another service when it fails.
 
-A Lagom Java seed template for sbt
+Look at [StreamResumerServiceImpl.java](stream-resumer-impl/src/main/java/com/lightbend/streamResumer/impl/StreamResumerServiceImpl.java)
