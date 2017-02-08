@@ -61,14 +61,12 @@ public class StreamResumerServiceImpl implements StreamResumerService {
             System.err.println("Fetching chirps from chirpService");
             PSequence<String> userIds = TreePVector.from(asList("user1", "user2"));
             LiveChirpsRequest chirpsReq = new LiveChirpsRequest(userIds);
-            // Note that this stream will not include changes to friend associates,
-            // e.g. adding a new friend.
+
             CompletionStage<Source<Chirp, ?>> result = chirpService.getLiveChirps().invoke(chirpsReq);
             result.thenAccept(chirps -> {
                 CompletionStage<Done> doneCompletionStage = chirps.runForeach(this::printChirp, materializer);
                 PatternsCS.pipe(doneCompletionStage, getContext().dispatcher()).to(getSelf());
             });
-
         }
 
         private void printChirp(Chirp chirp) {
