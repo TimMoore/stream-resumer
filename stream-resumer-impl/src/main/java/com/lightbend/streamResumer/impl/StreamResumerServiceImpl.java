@@ -63,10 +63,7 @@ public class StreamResumerServiceImpl implements StreamResumerService {
             LiveChirpsRequest chirpsReq = new LiveChirpsRequest(userIds);
 
             CompletionStage<Source<Chirp, ?>> result = chirpService.getLiveChirps().invoke(chirpsReq);
-            result.thenAccept(chirps -> {
-                CompletionStage<Done> doneCompletionStage = chirps.runForeach(this::printChirp, materializer);
-                PatternsCS.pipe(doneCompletionStage, getContext().dispatcher()).to(getSelf());
-            });
+            PatternsCS.pipe(result, getContext().dispatcher()).to(getSelf());
         }
 
         private void printChirp(Chirp chirp) {
@@ -82,6 +79,12 @@ public class StreamResumerServiceImpl implements StreamResumerService {
             } else if (message instanceof Done) {
                 System.err.println("Terminating");
                 getContext().stop(getSelf());
+            } else if (message instanceof Source) {
+                @SuppressWarnings("unchecked")
+                Source<Chirp, ?> chirps = (Source<Chirp, ?>) message;
+                System.err.println("Connected to chirpService");
+                CompletionStage<Done> doneCompletionStage = chirps.runForeach(this::printChirp, materializer);
+                PatternsCS.pipe(doneCompletionStage, getContext().dispatcher()).to(getSelf());
             }
         }
     }
